@@ -15,7 +15,10 @@ const register = async (req, res) => {
       return res.status(400).json({ message: "Email already registered" });
     }
 
-    const user = await User.create({ fullName, email, password });
+    // Get avatar URL from cloudinary if uploaded
+    const avatar = req.file ? req.file.path : "";
+
+    const user = await User.create({ fullName, email, password, avatar });
 
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
@@ -34,6 +37,7 @@ const register = async (req, res) => {
       avatar: user.avatar,
       accessToken,
     });
+
   } catch (error) {
     console.error("Register error:", error.message);
     res.status(500).json({ message: "Server error" });

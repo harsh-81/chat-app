@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import cloudinary from "../config/cloudinary.js";
 
 const getMe = async (req, res) => {
   try {
@@ -26,9 +27,16 @@ const updateProfile = async (req, res) => {
   try {
     const { fullName, bio } = req.body;
 
+    const updateData = { fullName, bio };
+
+    // If a new avatar was uploaded, add it to update
+    if (req.file) {
+      updateData.avatar = req.file.path;
+    }
+
     const updated = await User.findByIdAndUpdate(
       req.user._id,
-      { fullName, bio },
+      updateData,
       { new: true }
     ).select("-password");
 
