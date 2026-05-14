@@ -1,6 +1,6 @@
 import Conversation from "../models/Conversation.js";
 import Message from "../models/Message.js";
-import { upload } from "../config/cloudinary.js";
+import { io, onlineUsers } from "../server.js";
 
 // ─── SEND MESSAGE ────────────────────────────────────────────
 const sendMessage = async (req, res) => {
@@ -9,7 +9,7 @@ const sendMessage = async (req, res) => {
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
-    // 1. Find existing conversation or create new one
+    // 1. Find or create conversation
     let conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
@@ -21,26 +21,37 @@ const sendMessage = async (req, res) => {
       });
     }
 
-    // 2. Handle image upload if present
+    // 2. Handle image upload
     const image = req.file ? req.file.path : "";
 
-    // 3. Create the message
+    // 3. Create message
     const message = await Message.create({
       conversationId: conversation._id,
       sender: senderId,
       text: text || "",
       image,
-      seenBy: [senderId], // sender has already seen their own message
+      seenBy: [senderId],
     });
 
-    // 4. Update conversation's last message
+    // 4. Update conversation
     conversation.lastMessage = message._id;
-
-    // 5. Increment unread count for receiver
-    const receiverUnread = (conversation.unreadCounts.get(String(receiverId)) || 0) + 1;
+    const receiverUnread =
+      (conversation.unreadCounts.get(String(receiverId)) || 0) + 1;
     conversation.unreadCounts.set(String(receiverId), receiverUnread);
-
     await conversation.save();
+
+    // 5. Emit message to receiver in real-time if they are online
+    const receiverSocketId = onlineUsers[String(receiverId)];
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", message);
+
+      // Also update their conversation list in real-time
+      io.to(receiverSocketId).emit("conversationUpdated", {
+        conversationId: conversation._id,
+        lastMessage: message,
+        unreadCount: receiverUnread,
+      });
+    }
 
     res.status(201).json(message);
 
@@ -56,34 +67,32 @@ const getMessages = async (req, res) => {
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
-    // 1. Find the conversation
     const conversation = await Conversation.findOne({
       participants: { $all: [senderId, receiverId] },
     });
 
     if (!conversation) {
-      return res.status(200).json([]); // no conversation yet, return empty array
+      return res.status(200).json([]);
     }
 
-    // 2. Mark messages as seen
+    // Mark messages as seen
     await Message.updateMany(
       {
         conversationId: conversation._id,
-        seenBy: { $nin: [senderId] }, // not already seen by this user
+        seenBy: { $nin: [senderId] },
       },
       {
-        $addToSet: { seenBy: senderId }, // add user to seenBy array
+        $addToSet: { seenBy: senderId },
       }
     );
 
-    // 3. Reset unread count for this user
+    // Reset unread count
     conversation.unreadCounts.set(String(senderId), 0);
     await conversation.save();
 
-    // 4. Get all messages
     const messages = await Message.find({
       conversationId: conversation._id,
-    }).sort({ createdAt: 1 }); // oldest first
+    }).sort({ createdAt: 1 });
 
     res.status(200).json(messages);
 
@@ -98,13 +107,12 @@ const getConversations = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Find all conversations this user is part of
     const conversations = await Conversation.find({
       participants: { $in: [userId] },
     })
-      .populate("participants", "-password") // get full user details
-      .populate("lastMessage")               // get last message details
-      .sort({ updatedAt: -1 });              // most recent first
+      .populate("participants", "-password")
+      .populate("lastMessage")
+      .sort({ updatedAt: -1 });
 
     res.status(200).json(conversations);
 
