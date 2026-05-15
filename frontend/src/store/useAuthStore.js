@@ -3,13 +3,12 @@ import axiosInstance from "../lib/axios.js";
 import { connectSocket, disconnectSocket } from "../lib/socket.js";
 import toast from "react-hot-toast";
 
-const useAuthStore = create((set, get) => ({
+const useAuthStore = create((set) => ({
   user: null,
   accessToken: localStorage.getItem("accessToken") || null,
   isLoading: false,
   isCheckingAuth: true,
 
-  // Register
   register: async (formData) => {
     set({ isLoading: true });
     try {
@@ -25,7 +24,6 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Login
   login: async (formData) => {
     set({ isLoading: true });
     try {
@@ -41,7 +39,6 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Logout
   logout: async () => {
     try {
       await axiosInstance.post("/auth/logout");
@@ -54,7 +51,6 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  // Check if user is already logged in on page refresh
   checkAuth: async () => {
     set({ isCheckingAuth: true });
     try {

@@ -2,10 +2,10 @@ import axios from "axios";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
-  withCredentials: true, // send cookies with every request
+  withCredentials: true,
 });
 
-// Automatically attach access token to every request
+// Attach access token to every request
 axiosInstance.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
   if (token) {
@@ -14,7 +14,7 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-// If token expired (401), try to refresh it
+// Auto refresh token on 401
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -30,7 +30,7 @@ axiosInstance.interceptors.response.use(
         const newToken = res.data.accessToken;
         localStorage.setItem("accessToken", newToken);
         original.headers.Authorization = `Bearer ${newToken}`;
-        return axiosInstance(original); // retry original request
+        return axiosInstance(original);
       } catch {
         localStorage.removeItem("accessToken");
         window.location.href = "/login";

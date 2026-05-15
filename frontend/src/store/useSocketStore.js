@@ -6,32 +6,26 @@ import toast from "react-hot-toast";
 const useSocketStore = create((set) => ({
   isConnected: false,
 
-  // Setup all socket listeners
   setupListeners: () => {
     const socket = getSocket();
     if (!socket) return;
 
-    // Online users
     socket.on("getOnlineUsers", (users) => {
       useChatStore.getState().setOnlineUsers(users);
     });
 
-    // New message received
     socket.on("newMessage", (message) => {
       useChatStore.getState().addMessage(message);
     });
 
-    // Conversation list update
     socket.on("conversationUpdated", (data) => {
       useChatStore.getState().updateConversation(data);
     });
 
-    // Total unread badge
     socket.on("totalUnreadCount", ({ totalUnread }) => {
       useChatStore.getState().setTotalUnread(totalUnread);
     });
 
-    // Group events
     socket.on("addedToGroup", (group) => {
       toast.success(`You were added to ${group.groupName}`);
       useChatStore.getState().getConversations();
@@ -54,7 +48,6 @@ const useSocketStore = create((set) => ({
     set({ isConnected: true });
   },
 
-  // Remove all listeners (cleanup)
   removeListeners: () => {
     const socket = getSocket();
     if (!socket) return;

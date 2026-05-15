@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axiosInstance from "../lib/axios.js";
 import toast from "react-hot-toast";
 
-const useChatStore = create((set, get) => ({
+const useChatStore = create((set) => ({
   conversations: [],
   activeConversation: null,
   messages: [],
@@ -11,17 +11,13 @@ const useChatStore = create((set, get) => ({
   isLoadingMessages: false,
   isLoadingConversations: false,
 
-  // Set online users from socket
   setOnlineUsers: (users) => set({ onlineUsers: users }),
 
-  // Set total unread count
   setTotalUnread: (count) => set({ totalUnread: count }),
 
-  // Set active conversation
   setActiveConversation: (conversation) =>
     set({ activeConversation: conversation }),
 
-  // Get all conversations
   getConversations: async () => {
     set({ isLoadingConversations: true });
     try {
@@ -34,7 +30,6 @@ const useChatStore = create((set, get) => ({
     }
   },
 
-  // Get messages for a conversation
   getMessages: async (receiverId) => {
     set({ isLoadingMessages: true });
     try {
@@ -47,7 +42,6 @@ const useChatStore = create((set, get) => ({
     }
   },
 
-  // Send message
   sendMessage: async (receiverId, formData) => {
     try {
       const res = await axiosInstance.post(
@@ -60,10 +54,8 @@ const useChatStore = create((set, get) => ({
     }
   },
 
-  // Add message from socket (real-time)
   addMessage: (message) => {
     set((state) => {
-      // Only add if it belongs to active conversation
       const active = state.activeConversation;
       if (
         active &&
@@ -75,7 +67,6 @@ const useChatStore = create((set, get) => ({
     });
   },
 
-  // Update conversation in list (last message + unread)
   updateConversation: (data) => {
     set((state) => ({
       conversations: state.conversations.map((conv) =>

@@ -34,14 +34,13 @@ const RegisterPage = () => {
       className="min-h-screen w-full flex"
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
-      {/* ── Left Panel ── */}
+      {/* Left Panel */}
       <div
         className="hidden lg:flex flex-col justify-between w-1/2 p-12"
         style={{
           background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
         }}
       >
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
@@ -57,7 +56,6 @@ const RegisterPage = () => {
           </span>
         </div>
 
-        {/* Center text */}
         <div>
           <h2
             className="text-4xl font-bold leading-tight mb-4"
@@ -73,7 +71,6 @@ const RegisterPage = () => {
           </p>
         </div>
 
-        {/* Feature pills */}
         <div className="flex flex-wrap gap-3">
           {[
             "🔒 End-to-end secure",
@@ -96,11 +93,9 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      {/* ── Right Panel ── */}
+      {/* Right Panel */}
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md mx-4">
-
-          {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 mb-8 justify-center">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
@@ -116,7 +111,6 @@ const RegisterPage = () => {
             </span>
           </div>
 
-          {/* Card */}
           <div
             className="rounded-2xl shadow-2xl"
             style={{
@@ -138,8 +132,6 @@ const RegisterPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-
-              {/* Avatar */}
               <div className="flex items-center gap-4">
                 <div
                   className="w-16 h-16 rounded-full overflow-hidden cursor-pointer flex-shrink-0 flex items-center justify-center border-2"
@@ -189,7 +181,6 @@ const RegisterPage = () => {
                 />
               </div>
 
-              {/* Full Name */}
               <div className="flex flex-col gap-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-wider"
@@ -219,7 +210,6 @@ const RegisterPage = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="flex flex-col gap-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-wider"
@@ -249,7 +239,6 @@ const RegisterPage = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="flex flex-col gap-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-wider"
@@ -279,7 +268,6 @@ const RegisterPage = () => {
                 />
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={isLoading}

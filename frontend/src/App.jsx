@@ -14,7 +14,7 @@ const App = () => {
   // Check if user is logged in on page load
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   // Setup socket listeners when user logs in
   useEffect(() => {
@@ -23,7 +23,7 @@ const App = () => {
     } else {
       removeListeners();
     }
-  }, [user]);
+  }, [user, setupListeners, removeListeners]);
 
   if (isCheckingAuth) {
     return (

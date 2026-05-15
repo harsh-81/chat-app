@@ -16,14 +16,13 @@ const LoginPage = () => {
       className="min-h-screen w-full flex"
       style={{ backgroundColor: "var(--bg-primary)" }}
     >
-      {/* ── Left Panel ── */}
+      {/* Left Panel */}
       <div
         className="hidden lg:flex flex-col justify-between w-1/2 p-12"
         style={{
           background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
         }}
       >
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-xl flex items-center justify-center text-xl"
@@ -39,22 +38,19 @@ const LoginPage = () => {
           </span>
         </div>
 
-        {/* Center text */}
         <div>
           <h2
             className="text-4xl font-bold leading-tight mb-4"
             style={{ color: "var(--text-primary)" }}
           >
             Good to see <br />
-            you{" "}
-            <span style={{ color: "var(--accent)" }}>again.</span>
+            you <span style={{ color: "var(--accent)" }}>again.</span>
           </h2>
           <p className="text-base" style={{ color: "var(--text-secondary)" }}>
             Your conversations are <br /> waiting for you.
           </p>
         </div>
 
-        {/* Stats */}
         <div className="flex gap-8">
           {[
             { value: "100%", label: "Secure" },
@@ -76,11 +72,9 @@ const LoginPage = () => {
         </div>
       </div>
 
-      {/* ── Right Panel ── */}
+      {/* Right Panel */}
       <div className="flex flex-1 items-center justify-center p-6">
         <div className="w-full max-w-md mx-4">
-
-          {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 mb-8 justify-center">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
@@ -96,7 +90,6 @@ const LoginPage = () => {
             </span>
           </div>
 
-          {/* Card */}
           <div
             className="rounded-2xl shadow-2xl"
             style={{
@@ -118,8 +111,6 @@ const LoginPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-
-              {/* Email */}
               <div className="flex flex-col gap-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-wider"
@@ -149,7 +140,6 @@ const LoginPage = () => {
                 />
               </div>
 
-              {/* Password */}
               <div className="flex flex-col gap-1.5">
                 <label
                   className="text-xs font-medium uppercase tracking-wider"
@@ -179,7 +169,6 @@ const LoginPage = () => {
                 />
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={isLoading}
