@@ -6,15 +6,26 @@
   box-sizing: border-box;
 }
 
-::-webkit-scrollbar {
-  width: 4px;
+:root {
+  --bg-primary: #111b21;
+  --bg-secondary: #202c33;
+  --bg-hover: #2a3942;
+  --bg-input: #2a3942;
+  --accent: #00a884;
+  --accent-hover: #02906f;
+  --text-primary: #e9edef;
+  --text-secondary: #8696a0;
+  --border: #2a3942;
+  --message-out: #005c4b;
+  --message-in: #202c33;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Segoe UI', sans-serif;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 999px;
-}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #374045; border-radius: 999px; }
