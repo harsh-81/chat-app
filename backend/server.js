@@ -8,6 +8,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import groupRoutes from "./routes/groupRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -70,6 +71,8 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/groups", groupRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("Chat API is running...");

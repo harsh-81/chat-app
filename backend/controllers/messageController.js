@@ -9,22 +9,28 @@ const sendMessage = async (req, res) => {
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
-    // 1. Find or create conversation
-    let conversation = await Conversation.findOne({
-      participants: { $all: [senderId, receiverId] },
-    });
+    // Find conversation — works for both direct and group
+    let conversation = await Conversation.findById(receiverId);
 
+    // If not found by ID it might be a direct chat — find by participants
+    if (!conversation) {
+      conversation = await Conversation.findOne({
+        participants: { $all: [senderId, receiverId] },
+        type: "direct",
+      });
+    }
+
+    // Create new direct conversation if doesn't exist
     if (!conversation) {
       conversation = await Conversation.create({
+        type: "direct",
         participants: [senderId, receiverId],
         unreadCounts: { [receiverId]: 0, [senderId]: 0 },
       });
     }
 
-    // 2. Handle image upload
     const image = req.file ? req.file.path : "";
 
-    // 3. Create message
     const message = await Message.create({
       conversationId: conversation._id,
       sender: senderId,
@@ -33,25 +39,33 @@ const sendMessage = async (req, res) => {
       seenBy: [senderId],
     });
 
-    // 4. Update conversation
     conversation.lastMessage = message._id;
-    const receiverUnread =
-      (conversation.unreadCounts.get(String(receiverId)) || 0) + 1;
-    conversation.unreadCounts.set(String(receiverId), receiverUnread);
+
+    // Update unread counts for all participants except sender
+    conversation.participants.forEach((participantId) => {
+      if (String(participantId) !== String(senderId)) {
+        const current =
+          conversation.unreadCounts.get(String(participantId)) || 0;
+        conversation.unreadCounts.set(String(participantId), current + 1);
+      }
+    });
+
     await conversation.save();
 
-    // 5. Emit message to receiver in real-time if they are online
-    const receiverSocketId = onlineUsers[String(receiverId)];
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", message);
-
-      // Also update their conversation list in real-time
-      io.to(receiverSocketId).emit("conversationUpdated", {
-        conversationId: conversation._id,
-        lastMessage: message,
-        unreadCount: receiverUnread,
-      });
-    }
+    // Emit to all online participants except sender
+    conversation.participants.forEach((participantId) => {
+      if (String(participantId) !== String(senderId)) {
+        const socketId = onlineUsers[String(participantId)];
+        if (socketId) {
+          io.to(socketId).emit("newMessage", message);
+          io.to(socketId).emit("conversationUpdated", {
+            conversationId: conversation._id,
+            lastMessage: message,
+            unreadCount: conversation.unreadCounts.get(String(participantId)),
+          });
+        }
+      }
+    });
 
     res.status(201).json(message);
 
