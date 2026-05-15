@@ -9,10 +9,8 @@ const sendMessage = async (req, res) => {
     const { receiverId } = req.params;
     const senderId = req.user._id;
 
-    // Find conversation — works for both direct and group
     let conversation = await Conversation.findById(receiverId);
 
-    // If not found by ID it might be a direct chat — find by participants
     if (!conversation) {
       conversation = await Conversation.findOne({
         participants: { $all: [senderId, receiverId] },
@@ -20,7 +18,6 @@ const sendMessage = async (req, res) => {
       });
     }
 
-    // Create new direct conversation if doesn't exist
     if (!conversation) {
       conversation = await Conversation.create({
         type: "direct",
@@ -44,8 +41,7 @@ const sendMessage = async (req, res) => {
     // Update unread counts for all participants except sender
     conversation.participants.forEach((participantId) => {
       if (String(participantId) !== String(senderId)) {
-        const current =
-          conversation.unreadCounts.get(String(participantId)) || 0;
+        const current = conversation.unreadCounts.get(String(participantId)) || 0;
         conversation.unreadCounts.set(String(participantId), current + 1);
       }
     });
@@ -53,16 +49,27 @@ const sendMessage = async (req, res) => {
     await conversation.save();
 
     // Emit to all online participants except sender
-    conversation.participants.forEach((participantId) => {
+    conversation.participants.forEach(async (participantId) => {
       if (String(participantId) !== String(senderId)) {
         const socketId = onlineUsers[String(participantId)];
         if (socketId) {
+          // Get total unread for badge
+          const allConversations = await Conversation.find({
+            participants: { $in: [participantId] },
+          });
+
+          let totalUnread = 0;
+          allConversations.forEach((conv) => {
+            totalUnread += conv.unreadCounts.get(String(participantId)) || 0;
+          });
+
           io.to(socketId).emit("newMessage", message);
           io.to(socketId).emit("conversationUpdated", {
             conversationId: conversation._id,
             lastMessage: message,
             unreadCount: conversation.unreadCounts.get(String(participantId)),
           });
+          io.to(socketId).emit("totalUnreadCount", { totalUnread });
         }
       }
     });
@@ -136,4 +143,29 @@ const getConversations = async (req, res) => {
   }
 };
 
-export { sendMessage, getMessages, getConversations };
+// ─── GET TOTAL UNREAD COUNT ───────────────────────────────────
+const getUnreadCount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find all conversations this user is part of
+    const conversations = await Conversation.find({
+      participants: { $in: [userId] },
+    });
+
+    // Add up all unread counts for this user
+    let totalUnread = 0;
+    conversations.forEach((conv) => {
+      const count = conv.unreadCounts.get(String(userId)) || 0;
+      totalUnread += count;
+    });
+
+    res.status(200).json({ totalUnread });
+
+  } catch (error) {
+    console.error("getUnreadCount error:", error.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export { sendMessage, getMessages, getConversations, getUnreadCount };
